@@ -27,7 +27,7 @@ func (gui *Gui) getSelectedFile() *models.File {
 		return nil
 	}
 
-	return gui.State.Files[selectedLine]
+	return gui.State.StatusLineManager.GetItemAtIndex(selectedLine)
 }
 
 func (gui *Gui) selectFile(alreadySelected bool) error {
@@ -131,7 +131,7 @@ func (gui *Gui) refreshFilesAndSubmodules() error {
 // specific functions
 
 func (gui *Gui) stagedFiles() []*models.File {
-	files := gui.State.Files
+	files := gui.State.StatusLineManager.GetAllFiles()
 	result := make([]*models.File, 0)
 	for _, file := range files {
 		if file.HasStagedChanges {
@@ -142,7 +142,7 @@ func (gui *Gui) stagedFiles() []*models.File {
 }
 
 func (gui *Gui) trackedFiles() []*models.File {
-	files := gui.State.Files
+	files := gui.State.StatusLineManager.GetAllFiles()
 	result := make([]*models.File, 0, len(files))
 	for _, file := range files {
 		if file.Tracked {
@@ -216,7 +216,7 @@ func (gui *Gui) handleFilePress() error {
 }
 
 func (gui *Gui) allFilesStaged() bool {
-	for _, file := range gui.State.Files {
+	for _, file := range gui.State.StatusLineManager.GetAllFiles() {
 		if file.HasUnstagedChanges {
 			return false
 		}
@@ -451,7 +451,9 @@ func (gui *Gui) refreshStateFiles() error {
 
 	// get files to stage
 	files := gui.GitCommand.GetStatusFiles(commands.GetStatusFileOptions{})
-	gui.State.Files = gui.GitCommand.MergeStatusFiles(gui.State.Files, files, selectedFile)
+	gui.State.StatusLineManager.SetFiles(
+		gui.GitCommand.MergeStatusFiles(gui.State.StatusLineManager.GetAllFiles(), files, selectedFile),
+	)
 
 	if err := gui.fileWatcher.addFilesToFileWatcher(files); err != nil {
 		return err
@@ -459,7 +461,7 @@ func (gui *Gui) refreshStateFiles() error {
 
 	// let's try to find our file again and move the cursor to that
 	if selectedFile != nil {
-		for idx, f := range gui.State.Files {
+		for idx, f := range gui.State.StatusLineManager.GetAllItems() {
 			selectedFileHasMoved := f.Matches(selectedFile) && idx != prevSelectedLineIdx
 			if selectedFileHasMoved {
 				gui.State.Panels.Files.SelectedLineIdx = idx
@@ -468,7 +470,7 @@ func (gui *Gui) refreshStateFiles() error {
 		}
 	}
 
-	gui.refreshSelectedLine(gui.State.Panels.Files, len(gui.State.Files))
+	gui.refreshSelectedLine(gui.State.Panels.Files, gui.State.StatusLineManager.GetItemsLength())
 	return nil
 }
 
@@ -661,7 +663,7 @@ func (gui *Gui) openFile(filename string) error {
 }
 
 func (gui *Gui) anyFilesWithMergeConflicts() bool {
-	for _, file := range gui.State.Files {
+	for _, file := range gui.State.StatusLineManager.GetAllFiles() {
 		if file.HasMergeConflicts {
 			return true
 		}

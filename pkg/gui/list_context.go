@@ -262,7 +262,7 @@ func (gui *Gui) filesListContext() *ListContext {
 	return &ListContext{
 		ViewName:                   "files",
 		ContextKey:                 FILES_CONTEXT_KEY,
-		GetItemsLength:             func() int { return len(gui.State.Files) },
+		GetItemsLength:             func() int { return gui.State.StatusLineManager.GetItemsLength() },
 		GetPanelState:              func() IListPanelState { return gui.State.Panels.Files },
 		OnFocus:                    gui.focusAndSelectFile,
 		OnClickSelectedItem:        gui.handleFilePress,
@@ -270,7 +270,7 @@ func (gui *Gui) filesListContext() *ListContext {
 		ResetMainViewOriginOnFocus: false,
 		Kind:                       SIDE_CONTEXT,
 		GetDisplayStrings: func() [][]string {
-			return presentation.GetFileListDisplayStrings(gui.State.Files, gui.State.Modes.Diffing.Ref, gui.State.Submodules)
+			return presentation.GetFileListDisplayStrings(gui.State.StatusLineManager.GetAllFiles(), gui.State.Modes.Diffing.Ref, gui.State.Submodules)
 		},
 		SelectedItem: func() (ListItem, bool) {
 			item := gui.getSelectedFile()
