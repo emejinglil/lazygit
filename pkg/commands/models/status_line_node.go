@@ -121,22 +121,22 @@ func (s *StatusLineNode) renderAux(depth int) []string {
 		return []string{}
 	}
 
-	name := fmt.Sprintf("%s %s", s.GetShortStatus(), s.Name)
+	getDesc := func() string { return fmt.Sprintf("%s %s", s.GetShortStatus(), s.Name) }
 
 	if s.IsLeaf() {
 		if depth == -1 {
 			return []string{}
 		}
-		return []string{fmt.Sprintf("%s%s", strings.Repeat("  ", depth), name)}
+		return []string{fmt.Sprintf("%s%s", strings.Repeat("  ", depth), getDesc())}
 	}
 
 	if s.Collapsed {
-		return []string{fmt.Sprintf("%s%s %s", strings.Repeat("  ", depth), name, COLLAPSED_ARROW)}
+		return []string{fmt.Sprintf("%s%s %s", strings.Repeat("  ", depth), getDesc(), COLLAPSED_ARROW)}
 	}
 
 	arr := []string{}
 	if depth > -1 {
-		arr = append(arr, fmt.Sprintf("%s%s %s", strings.Repeat("  ", depth), name, EXPANDED_ARROW))
+		arr = append(arr, fmt.Sprintf("%s%s %s", strings.Repeat("  ", depth), getDesc(), EXPANDED_ARROW))
 	}
 
 	for _, child := range s.Children {
