@@ -11,38 +11,22 @@ func GetFileListDisplayStrings(files []*models.File, diffName string, submoduleC
 	lines := make([][]string, len(files))
 
 	for i := range files {
-		diffed := files[i].Name == diffName
-		lines[i] = getFileDisplayStrings(files[i], diffed, submoduleConfigs)
+		lines[i] = getFileDisplayStrings(files[i], diffName, submoduleConfigs)
 	}
 
 	return lines
 }
 
-// // how do I render these things? I need an arrow saying whether the item is collapsed or not, and I need to recursively render the thing.
-// func GetFileListDisplayStringsForTree(statusLineManager *statusLineManager, diffName string, submoduleConfigs []*models.SubmoduleConfig) [][]string {
-// 	lines := make([][]string, len(files))
-
-// 	for i := range files {
-// 		diffed := files[i].Name == diffName
-// 		lines[i] = getFileDisplayStrings(files[i], diffed, submoduleConfigs)
-// 	}
-
-// 	return lines
-// }
-
 // getFileDisplayStrings returns the display string of branch
-func getFileDisplayStrings(f *models.File, diffed bool, submoduleConfigs []*models.SubmoduleConfig) []string {
+func getFileDisplayStrings(f *models.File, diffName string, submoduleConfigs []*models.SubmoduleConfig) []string {
 	// potentially inefficient to be instantiating these color
 	// objects with each render
 	red := color.New(color.FgRed)
 	green := color.New(color.FgGreen)
 	diffColor := color.New(theme.DiffTerminalColor)
-	if !f.Tracked && !f.HasStagedChanges {
-		return []string{red.Sprint(f.DisplayString)}
-	}
 
 	var restColor *color.Color
-	if diffed {
+	if f.Name == diffName {
 		restColor = diffColor
 	} else if f.HasUnstagedChanges {
 		restColor = red
@@ -51,13 +35,15 @@ func getFileDisplayStrings(f *models.File, diffed bool, submoduleConfigs []*mode
 	}
 
 	// this is just making things look nice when the background attribute is 'reverse'
-	firstChar := f.DisplayString[0:1]
+	firstChar := f.ShortStatus[0:1]
 	firstCharCl := green
-	if firstChar == " " {
+	if firstChar == "?" {
+		firstCharCl = red
+	} else if firstChar == " " {
 		firstCharCl = restColor
 	}
 
-	secondChar := f.DisplayString[1:2]
+	secondChar := f.ShortStatus[1:2]
 	secondCharCl := red
 	if secondChar == " " {
 		secondCharCl = restColor
