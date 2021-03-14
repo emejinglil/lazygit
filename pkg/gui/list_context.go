@@ -270,6 +270,14 @@ func (gui *Gui) filesListContext() *ListContext {
 		ResetMainViewOriginOnFocus: false,
 		Kind:                       SIDE_CONTEXT,
 		GetDisplayStrings: func() [][]string {
+			lines := gui.State.StatusLineManager.Render()
+			mappedLines := make([][]string, len(lines))
+			for i, line := range lines {
+				mappedLines[i] = []string{line}
+			}
+
+			return mappedLines
+
 			return presentation.GetFileListDisplayStrings(gui.State.StatusLineManager.GetAllFiles(), gui.State.Modes.Diffing.Ref, gui.State.Submodules)
 		},
 		SelectedItem: func() (ListItem, bool) {

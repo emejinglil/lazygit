@@ -21,13 +21,26 @@ import (
 
 // list panel functions
 
+// func (gui *Gui) getSelectedStatusNode() *models.StatusLineNode {
+// 	selectedLine := gui.State.Panels.Files.SelectedLineIdx
+// 	if selectedLine == -1 {
+// 		return nil
+// 	}
+
+// 	return gui.State.StatusLineManager.GetItemAtIndex(selectedLine)
+// }
+
 func (gui *Gui) getSelectedFile() *models.File {
 	selectedLine := gui.State.Panels.Files.SelectedLineIdx
 	if selectedLine == -1 {
 		return nil
 	}
 
-	return gui.State.StatusLineManager.GetItemAtIndex(selectedLine)
+	node := gui.State.StatusLineManager.GetItemAtIndex(selectedLine)
+	if node == nil {
+		return nil
+	}
+	return node.File
 }
 
 func (gui *Gui) selectFile(alreadySelected bool) error {
@@ -461,8 +474,9 @@ func (gui *Gui) refreshStateFiles() error {
 
 	// let's try to find our file again and move the cursor to that
 	if selectedFile != nil {
-		for idx, f := range gui.State.StatusLineManager.GetAllItems() {
-			selectedFileHasMoved := f.Matches(selectedFile) && idx != prevSelectedLineIdx
+		for idx, node := range gui.State.StatusLineManager.GetAllItems() {
+			// TODO: check that this works
+			selectedFileHasMoved := node.File != nil && node.File.Matches(selectedFile) && idx != prevSelectedLineIdx
 			if selectedFileHasMoved {
 				gui.State.Panels.Files.SelectedLineIdx = idx
 				break

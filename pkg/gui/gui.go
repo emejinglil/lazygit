@@ -302,38 +302,6 @@ type guiStateMutexes struct {
 	LineByLinePanelMutex  sync.Mutex
 }
 
-type StatusLineManager struct {
-	Files    []*models.File
-	Tree     *models.StatusLineNode
-	TreeMode bool
-}
-
-func (m *StatusLineManager) GetItemAtIndex(index int) *models.StatusLineNode {
-	if m.TreeMode {
-		// need to traverse the three depth first until we get to the index.
-		return m.Tree.GetNodeAtIndex(index)
-	}
-
-	return m.Files[index]
-}
-
-func (m *StatusLineManager) GetAllItems() []*models.StatusLineNode {
-	return m.Tree.Flatten()
-}
-
-func (m *StatusLineManager) GetItemsLength() int {
-	return m.Tree.Size()
-}
-
-func (m *StatusLineManager) GetAllFiles() []*models.File {
-	return m.Files
-}
-
-func (m *StatusLineManager) SetFiles(files []*models.File) {
-	m.Files = files
-	m.Tree = GetTreeFromStatusFiles(files)
-}
-
 type guiState struct {
 	StatusLineManager *StatusLineManager
 	Submodules        []*models.SubmoduleConfig
@@ -410,7 +378,7 @@ func (gui *Gui) resetState() {
 	}
 
 	gui.State = &guiState{
-		StatusLineManager:     &StatusLineManager{Files: make([]*models.File, 0)},
+		StatusLineManager:     &StatusLineManager{Files: make([]*models.File, 0), Log: gui.Log, TreeMode: true},
 		Commits:               make([]*models.Commit, 0),
 		FilteredReflogCommits: make([]*models.Commit, 0),
 		ReflogCommits:         make([]*models.Commit, 0),

@@ -18,6 +18,18 @@ func GetFileListDisplayStrings(files []*models.File, diffName string, submoduleC
 	return lines
 }
 
+// // how do I render these things? I need an arrow saying whether the item is collapsed or not, and I need to recursively render the thing.
+// func GetFileListDisplayStringsForTree(statusLineManager *statusLineManager, diffName string, submoduleConfigs []*models.SubmoduleConfig) [][]string {
+// 	lines := make([][]string, len(files))
+
+// 	for i := range files {
+// 		diffed := files[i].Name == diffName
+// 		lines[i] = getFileDisplayStrings(files[i], diffed, submoduleConfigs)
+// 	}
+
+// 	return lines
+// }
+
 // getFileDisplayStrings returns the display string of branch
 func getFileDisplayStrings(f *models.File, diffed bool, submoduleConfigs []*models.SubmoduleConfig) []string {
 	// potentially inefficient to be instantiating these color

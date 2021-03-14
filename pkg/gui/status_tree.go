@@ -42,6 +42,8 @@ func GetTreeFromStatusFiles(files []*models.File) *models.StatusLineNode {
 		}
 	}
 
+	root.SortTree()
+
 	return root
 }
 

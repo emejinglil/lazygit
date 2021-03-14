@@ -1,5 +1,14 @@
 package models
 
+import (
+	"fmt"
+	"sort"
+	"strings"
+)
+
+const EXPANDED_ARROW = "▼"
+const COLLAPSED_ARROW = "►"
+
 type StatusLineNode struct {
 	Children  []*StatusLineNode
 	File      *File
@@ -54,12 +63,12 @@ func (s *StatusLineNode) HasStagedChanges() bool {
 }
 
 func (s *StatusLineNode) GetNodeAtIndex(index int) *StatusLineNode {
-	node, _ := s.GetNodeAtIndexAux(index)
+	node, _ := s.getNodeAtIndexAux(index)
 
 	return node
 }
 
-func (s *StatusLineNode) GetNodeAtIndexAux(index int) (*StatusLineNode, int) {
+func (s *StatusLineNode) getNodeAtIndexAux(index int) (*StatusLineNode, int) {
 	offset := 1
 
 	if index == 0 {
@@ -67,7 +76,7 @@ func (s *StatusLineNode) GetNodeAtIndexAux(index int) (*StatusLineNode, int) {
 	}
 
 	for _, child := range s.Children {
-		node, offsetChange := child.GetNodeAtIndexAux(index - offset)
+		node, offsetChange := child.getNodeAtIndexAux(index - offset)
 		offset += offsetChange
 		if node != nil {
 			return node, offset
@@ -99,4 +108,71 @@ func (s *StatusLineNode) Flatten() []*StatusLineNode {
 	}
 
 	return arr
+}
+
+// need a function which will return a formatted array of lines.
+
+func (s *StatusLineNode) Render() []string {
+	return s.renderAux(-1)
+}
+
+func (s *StatusLineNode) renderAux(depth int) []string {
+	if s == nil {
+		return []string{}
+	}
+
+	name := fmt.Sprintf("%s %s", s.GetShortStatus(), s.Name)
+
+	if s.IsLeaf() {
+		if depth == -1 {
+			return []string{}
+		}
+		return []string{fmt.Sprintf("%s%s", strings.Repeat("  ", depth), name)}
+	}
+
+	if s.Collapsed {
+		return []string{fmt.Sprintf("%s%s %s", strings.Repeat("  ", depth), name, COLLAPSED_ARROW)}
+	}
+
+	arr := []string{}
+	if depth > -1 {
+		arr = append(arr, fmt.Sprintf("%s%s %s", strings.Repeat("  ", depth), name, EXPANDED_ARROW))
+	}
+
+	for _, child := range s.Children {
+		arr = append(arr, child.renderAux(depth+1)...)
+	}
+
+	return arr
+}
+
+func (s *StatusLineNode) SortTree() {
+	s.sortChildren()
+
+	for _, child := range s.Children {
+		child.SortTree()
+	}
+}
+
+func (s *StatusLineNode) sortChildren() {
+	if s.IsLeaf() {
+		return
+	}
+
+	sortedChildren := make([]*StatusLineNode, len(s.Children))
+	copy(sortedChildren, s.Children)
+
+	sort.Slice(sortedChildren, func(i, j int) bool {
+		if !sortedChildren[i].IsLeaf() && sortedChildren[j].IsLeaf() {
+			return true
+		}
+		if sortedChildren[i].IsLeaf() && !sortedChildren[j].IsLeaf() {
+			return false
+		}
+
+		return sortedChildren[i].Name < sortedChildren[j].Name
+	})
+
+	// TODO: think about making this in-place
+	s.Children = sortedChildren
 }
