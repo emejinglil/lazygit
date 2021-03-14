@@ -19,6 +19,12 @@ func GetFileListDisplayStrings(files []*models.File, diffName string, submoduleC
 
 // getFileDisplayStrings returns the display string of branch
 func getFileDisplayStrings(f *models.File, diffName string, submoduleConfigs []*models.SubmoduleConfig) []string {
+	output := GetStatusNodeLine(f.HasUnstagedChanges, f.ShortStatus, f.Name, diffName, submoduleConfigs, f)
+
+	return []string{output}
+}
+
+func GetStatusNodeLine(hasUnstagedChanges bool, shortStatus string, name string, diffName string, submoduleConfigs []*models.SubmoduleConfig, file *models.File) string {
 	// potentially inefficient to be instantiating these color
 	// objects with each render
 	red := color.New(color.FgRed)
@@ -26,16 +32,16 @@ func getFileDisplayStrings(f *models.File, diffName string, submoduleConfigs []*
 	diffColor := color.New(theme.DiffTerminalColor)
 
 	var restColor *color.Color
-	if f.Name == diffName {
+	if name == diffName {
 		restColor = diffColor
-	} else if f.HasUnstagedChanges {
+	} else if hasUnstagedChanges {
 		restColor = red
 	} else {
 		restColor = green
 	}
 
 	// this is just making things look nice when the background attribute is 'reverse'
-	firstChar := f.ShortStatus[0:1]
+	firstChar := shortStatus[0:1]
 	firstCharCl := green
 	if firstChar == "?" {
 		firstCharCl = red
@@ -43,7 +49,7 @@ func getFileDisplayStrings(f *models.File, diffName string, submoduleConfigs []*
 		firstCharCl = restColor
 	}
 
-	secondChar := f.ShortStatus[1:2]
+	secondChar := shortStatus[1:2]
 	secondCharCl := red
 	if secondChar == " " {
 		secondCharCl = restColor
@@ -51,11 +57,11 @@ func getFileDisplayStrings(f *models.File, diffName string, submoduleConfigs []*
 
 	output := firstCharCl.Sprint(firstChar)
 	output += secondCharCl.Sprint(secondChar)
-	output += restColor.Sprintf(" %s", f.Name)
+	output += restColor.Sprintf(" %s", name)
 
-	if f.IsSubmodule(submoduleConfigs) {
+	if file != nil && file.IsSubmodule(submoduleConfigs) {
 		output += utils.ColoredString(" (submodule)", theme.DefaultTextColor)
 	}
 
-	return []string{output}
+	return output
 }

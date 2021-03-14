@@ -463,7 +463,8 @@ func (gui *Gui) refreshStateFiles() error {
 	prevSelectedLineIdx := gui.State.Panels.Files.SelectedLineIdx
 
 	// get files to stage
-	files := gui.GitCommand.GetStatusFiles(commands.GetStatusFileOptions{})
+	noRenames := gui.State.StatusLineManager.TreeMode
+	files := gui.GitCommand.GetStatusFiles(commands.GetStatusFileOptions{NoRenames: noRenames})
 	gui.State.StatusLineManager.SetFiles(
 		gui.GitCommand.MergeStatusFiles(gui.State.StatusLineManager.GetAllFiles(), files, selectedFile),
 	)

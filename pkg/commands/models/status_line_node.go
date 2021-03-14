@@ -1,13 +1,8 @@
 package models
 
 import (
-	"fmt"
 	"sort"
-	"strings"
 )
-
-const EXPANDED_ARROW = "▼"
-const COLLAPSED_ARROW = "►"
 
 type StatusLineNode struct {
 	Children  []*StatusLineNode
@@ -24,10 +19,10 @@ func (s *StatusLineNode) GetShortStatus() string {
 
 	firstChar := " "
 	secondChar := " "
-	if s.HasUnstagedChanges() {
+	if s.HasStagedChanges() {
 		firstChar = "M"
 	}
-	if s.HasStagedChanges() {
+	if s.HasUnstagedChanges() {
 		secondChar = "M"
 	}
 
@@ -105,42 +100,6 @@ func (s *StatusLineNode) Flatten() []*StatusLineNode {
 
 	for _, child := range s.Children {
 		arr = append(arr, child.Flatten()...)
-	}
-
-	return arr
-}
-
-// need a function which will return a formatted array of lines.
-
-func (s *StatusLineNode) Render() []string {
-	return s.renderAux(-1)
-}
-
-func (s *StatusLineNode) renderAux(depth int) []string {
-	if s == nil {
-		return []string{}
-	}
-
-	getLine := func() string { return fmt.Sprintf("%s%s %s", strings.Repeat("  ", depth), s.GetShortStatus(), s.Name) }
-
-	if s.IsLeaf() {
-		if depth == -1 {
-			return []string{}
-		}
-		return []string{getLine()}
-	}
-
-	if s.Collapsed {
-		return []string{fmt.Sprintf("%s %s", getLine(), COLLAPSED_ARROW)}
-	}
-
-	arr := []string{}
-	if depth > -1 {
-		arr = append(arr, fmt.Sprintf("%s %s", getLine(), EXPANDED_ARROW))
-	}
-
-	for _, child := range s.Children {
-		arr = append(arr, child.renderAux(depth+1)...)
 	}
 
 	return arr

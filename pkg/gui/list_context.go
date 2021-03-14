@@ -270,7 +270,7 @@ func (gui *Gui) filesListContext() *ListContext {
 		ResetMainViewOriginOnFocus: false,
 		Kind:                       SIDE_CONTEXT,
 		GetDisplayStrings: func() [][]string {
-			lines := gui.State.StatusLineManager.Render()
+			lines := gui.State.StatusLineManager.Render(gui.State.Modes.Diffing.Ref, gui.State.Submodules)
 			mappedLines := make([][]string, len(lines))
 			for i, line := range lines {
 				mappedLines[i] = []string{line}
